@@ -14,7 +14,16 @@ def get_last_page():
 
 def extract_job(html):
     title = html.find("h2").find("a")["title"]
-    company = html.find("h3", {"class": "fc-black-700"}).find("span").string.strip()
+    company = html.find("h3", {"class": "fc-black-700"}).find("span")
+    if company:
+      company_anchor = company.find("a")
+      if company_anchor is not None:
+          company = str(company_anchor.string)
+      else:
+          company = str(company.string)
+    else:
+      company = None      
+    company = company.strip()    
     location = html.find("h3", {"class": "fc-black-700"}).find("span",{"class":"fc-black-500"}).string.strip()
     link = html.find("a",{"class":"s-link"})["href"]
     return {
