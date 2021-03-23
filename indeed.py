@@ -42,6 +42,7 @@ def extract_job(html):
 
 def extract_jobs(last_page):
     for page in range(last_page):
+        print(f"Scrapping IN Page : {page}")
         jobs = []
         result = requests.get(f"{URL}&start={page*LIMIT}")
         soup = BeautifulSoup(result.text, "html.parser")

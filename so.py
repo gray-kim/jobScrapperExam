@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 LIMIT = 50
 URL = f"https://stackoverflow.com/jobs?tl=python"
 
+
 def get_last_page():
     result = requests.get(URL)
     soup = BeautifulSoup(result.text, "html.parser")
@@ -14,30 +15,32 @@ def get_last_page():
 
 def extract_job(html):
     title = html.find("h2").find("a")["title"]
-    company = html.find("h3", {"class": "fc-black-700"}).find("span")
+    company, location = html.find("h3", {
+        "class": "fc-black-700"
+    }).find_all("span", recursive=False)
     if company:
-      company_anchor = company.find("a")
-      if company_anchor is not None:
-          company = str(company_anchor.string)
-      else:
-          company = str(company.string)
+        company_anchor = company.find("a")
+        if company_anchor is not None:
+            company = str(company_anchor.string)
+        else:
+            company = str(company.string)
     else:
-      company = None      
-    company = company.strip()    
-    location = html.find("h3", {"class": "fc-black-700"}).find("span",{"class":"fc-black-500"}).string.strip()
-    link = html.find("a",{"class":"s-link"})["href"]
+        company = None
+    company = company.strip()
+    location = location.get_text(strip=True)
+    job_id = html['data-jobid']
     return {
         'title': title,
         'company': company,
         'location': location,
-        "link": f"https://stackoverflow.com/{link}"
+        "link": f"https://stackoverflow.com/jobs/{job_id}"
     }
 
 
 def extract_jobs(last_page):
     jobs = []
     for page in range(last_page):
-        print(f"Scrapping Page {page}")
+        print(f"Scrapping SO Page : {page}")
         result = requests.get(f"{URL}&pg={page+1}")
         soup = BeautifulSoup(result.text, "html.parser")
         results = soup.find_all("div", {"class": "-job"})
@@ -46,7 +49,8 @@ def extract_jobs(last_page):
             jobs.append(job)
     return jobs
 
+
 def get_jobs():
-  last_page = get_last_page()
-  jobs = extract_jobs(last_page)
-  return jobs
+    last_page = get_last_page()
+    jobs = extract_jobs(last_page)
+    return jobs
